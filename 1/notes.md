@@ -1,6 +1,6 @@
 # Notes: Course 301, Lesson 1
 
-## Lecture 1, Part 1
+## Lecture 1
 
 ### First things to look at in a new project
 
@@ -117,7 +117,7 @@ user.posts << post
 
 This hits the database immediately, doing the first two lines of the original.
 
-#### Mass Assignments!
+### Mass Assignments!
 
 Passing a hash into an object creation method in order to quickly create an object.
 
