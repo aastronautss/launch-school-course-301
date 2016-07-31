@@ -127,3 +127,95 @@ Post.create title: 'blah', url: 'blah.com', user: User.first # hits the database
 ```
 
 This is the opposite of creating a new object and using setters.
+
+### Custom names for associations
+
+We can pass any key to `belongs_to`, and Rails will look for a table with the same name. If we want to make that key something that doesn't relate to a table, we need to be explicit. For example, if we have a 1:M relationship between Posts and Users, and want to use `creator` for the `Post` association, we do the following:
+
+```ruby
+class Post < ActiveRecord::Base
+  belongs_to :creator, foreign_key: 'user_id', class_name: 'User'
+end
+```
+
+We don't have to do anything to the 'many' side, since the foreign key corresponds exactly with the class name of the 'many' side.
+
+## Lecture 2
+
+### Review of Migrations
+
+The database is a persistence layer (like a cookie or a file store) for an application, completely separate from Rails. Migrations allow us to push a database schema around so we can synchronize schemas across machines.
+
+Migrations reflect those incremental changes. We want to never delete a migration file, only add. You typically don't want to do a rollback unless you're absolutely sure you haven't checked in the code.
+
+### M:M Associations
+
+habtm vs hmt
+
+Database layer: Join tables!
+
+Model layer:
+
+1. `has_and_belongs_to_many`
+  - No join model
+  - implicit join table at db layer
+    - `model1_name_model2_name` ex: `groups_users`
+
+Problems:
+  - Prevents us from having a join model and hanging attributes onto that model
+
+2. `has_many :through`
+  - has a join model
+  - can put additional attributes (columns) on associations
+
+  Problems:
+    - has a join model
+
+### Resources & Routes
+
+`routes.rb`:
+
+If we want to display all posts, we use:
+
+```ruby
+get '/posts', to: 'posts#index'
+```
+
+Posts controller, index action.
+
+Syntax for `index` action (done for you by `ApplicationController`):
+
+```ruby
+def index
+  render :index # or: render 'posts/index'
+end
+```
+
+For an individual post:
+
+```ruby
+get '/posts/:id', to: 'posts#show'
+```
+
+This passes `:id` into the `params` hash. In the controller, we can use `Post.find params[:id]`, and assign it to an instance variable, which we can pass to a view template (in this case, called `show.rb`).
+
+The `show` template for `Posts`:
+
+We can use any instance variables taht we create in the controller.
+
+We can go on with our routes...
+
+```ruby
+  get '/posts', to: 'posts#index'
+  get '/posts/:id', to: 'posts#show'
+  get '/posts/new', to: 'posts#new'
+  post '/posts', to: 'posts#create'
+  get '/posts/:id/edit', to: 'posts#edit'
+  patch '/posts/:id', to: 'posts#update'
+```
+
+But we can get rid of this! As long as we follow this convention tightly. Just use:
+
+```ruby
+resources :posts, except: [:destroy] # The :except key lets us lock down the destroy action. We don't always want to open everything up.
+```
