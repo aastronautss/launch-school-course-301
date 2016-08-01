@@ -219,3 +219,45 @@ But we can get rid of this! As long as we follow this convention tightly. Just u
 ```ruby
 resources :posts, except: [:destroy] # The :except key lets us lock down the destroy action. We don't always want to open everything up.
 ```
+
+#### Nested Resources
+
+We can pass a block into `resources` which will nest routes into one another:
+
+```ruby
+  resources :posts, except: [:destroy] do
+    resources :comments
+  end
+```
+
+Each comment is nested underneath one particular post.
+
+With our `postit` app, we don't need all those routes, so we can just use:
+
+```ruby
+resources :posts, except: [:destroy] do
+  resources :comments, only: [:create]
+end
+```
+
+This will only give us a `create` action for `comments`.
+
+### Named Routes
+
+e.g. `posts_path`. We never want to write a url as a string. These are ways of giving us ways to avoid this.
+
+```erb
+<%= link_to 'go back to all posts', '/posts' %>
+```
+
+Instead of doing this, we want to use named routes:
+
+```erb
+<%= link_to 'go back to all posts', posts_path %>
+```
+
+Why use this?
+
+If we need to change all our links in some way (from http to https, for example), this is easy with named routes. This is also important when it comes to slugging URLs.
+
+Hardcoded strings for URLs is definitely a code smell.
