@@ -204,3 +204,21 @@ We use this for a few different reasons:
 - Redirecting based on some condition
   - The action no longer executes if we redirect in a `before_action`.
   - This is good for checking logins.
+
+### Nested routes, continued
+
+What we've covered is a pretty generic set of actions for CRUD actions, and it's a RESTful interface.
+
+Once you know this, you need to start handling the special cases, which don't flow quite as well, for example, comments. Comments don't have a 'show comments' page. They exist, rather, on the Post page.
+
+The form for this looks like this:
+
+```erb
+<%= form_for [@post, @comment] do |f| %>
+  ...
+<% end %>
+```
+
+`@post` needs to be an existing post, while `@comment` needs to be a new comment. This makes `form_for` infer that it's posting to `/posts/:id/comments`.
+
+When this form is submitted, everything is nested in `params` under the `comment` key.
