@@ -2,7 +2,7 @@
   <div class='alert alert-error span8'>
     <h5>There were some errors:</h5>
     <ul>
-      <% @post.errors.full_messages.each do |msg| %>
+      <% obj.errors.full_messages.each do |msg| %>
         <li><%= msg %></li>
       <% end %>
     </ul>
