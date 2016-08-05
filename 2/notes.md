@@ -222,3 +222,101 @@ The form for this looks like this:
 `@post` needs to be an existing post, while `@comment` needs to be a new comment. This makes `form_for` infer that it's posting to `/posts/:id/comments`.
 
 When this form is submitted, everything is nested in `params` under the `comment` key.
+
+## Lecture 4
+
+### Nested routes
+
+Several tricks to get this to work:
+
+#### `form_for`
+
+We need to pass an array into `form_for`, with the first argument being (in this case) the `Post` that we want to add the comment to, and the second being the `Comment` we're working with (remember, it can be a new one or one that is linked to a row in the table).
+
+```erb
+<%= form_for [@post, @comment] do |f| %>
+  <%= f.test_area :body %>
+<% end %>
+```
+
+This submits to `/posts/:post_id/comments` as a `POST` request.
+
+When it submits to the `CommentsController`, this is a slight deviation from our RESTful action pattern. To add the comment to the post, we use
+
+```ruby
+def create
+  @post = Post.find params[:post_id]
+  @comment = @post.comments.build comment_params
+
+  # ...
+end
+```
+
+or any variation to add the comment to the post.
+
+#### Why nested routes?
+
+Think about the URLs when you're thinking about the mockups--they're not always going to be at the top level. URLs are part of the interface.
+
+### Helpers
+
+Currently, our links don't actually go to the correct places! We could go into the database, but we want to keep the data as it's
+
+Whenever we see logic in a template, we want to abstract it out. If it's a presentation-level concern, we use helpers for this (rather than adding methods to the model).
+
+Helpers correlate to the view templates, so we'd put them in their appropriate classes. `ApplicationHelper` is for app-wide helpers.
+
+To use them, we just call the method.
+
+#### Fat models, thin controllers.
+
+We typically want to move extra logic to models, rather than the controller layer. Models best capture business logic. It gets really hard to test controllers--it's much easier to do so with models.
+
+### Other stuff for model-backed forms
+
+When we set something like `<%= f.text_area :description %>`, the key we pass into the method needs to have a corresponding setter method. Either a column or a virtual attribute. Basically, anything we can mass-assign.
+
+### Adding stuff to M:M associations
+
+Say we have `post = Post.first`. We can clear its categories by calling the setter `post.categories=` and passing in a blank array:
+
+```ruby
+post.categories = []
+post.categories
+#=> Some empty AR collection
+```
+
+We can also mass assign the association with IDs:
+
+```ruby
+post.category_ids
+#=> []
+
+post.category_ids = [2, 3]
+
+post.category_ids
+#=> [2, 3]
+```
+
+So in the form, we can make a `select` box. This is pretty confusing.
+
+#### The form
+
+When submitting an input in which we're expecting multiple values (like a `multiple` select), we need to add `[]` to the `name` attribute:
+
+```html
+<select name='options[]' multiple='multiple'></select>
+```
+
+We can force these inputs to go into our `post` hash in `params` by doing the following:
+
+```html
+<select name='post[category_ids][]'></select>
+```
+
+For our validations, the syntax is a little weird when it comes to collections:
+
+```ruby
+params.require(:post).permit :title, :url, :description, category_ids: []
+```
+
