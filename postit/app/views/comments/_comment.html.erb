@@ -3,6 +3,6 @@
   <p>
     <span class='quiet'>by</span>
     <%= link_to comment.creator.username, '' %>
-    <small>at <%= comment.created_at %></small>
+    <small>at <%= format_date(comment.created_at) %></small>
   </p>
 </div>

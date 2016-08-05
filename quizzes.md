@@ -98,3 +98,88 @@ class Group < ActiveRecord::Base
   has_many :users, through: :user_groups
 end
 ```
+
+## Lesson 2
+
+### 1.
+
+HTTP Verb | path | controller#action | named route
+--- | --- | --- | ---
+`GET` | `/posts` | `posts#index` | `posts_path`
+`GET` | `/posts/:id` | `posts#show` | `post_path`
+`GET` | `/posts/:id/edit` | `posts#edit` | `edit_post_path`
+`PATCH` / `PUT` | `/posts/:id` | `posts#update` |
+`GET` | `/posts/new` | `posts#new` | `new_post_path`
+`POST` | `/posts` | `posts#create` |
+`DELETE` | `/posts/:id` | `posts#destroy` |
+
+### 2.
+
+REST is a common pattern for web applications. It reflects the paths and verbs that map to common CRUD functions for a resource. `resources` routes follow this pattern.
+
+### 3.
+
+Model-backed form helpers give us dynamic functionality that generates HTML based on the data we pass to it. For instance, it will generate a form that will correspond to a model's getter and setter methods, and automatically complete a form if we pass an existing model. It also creates a hash that helps us with mass assignment of model attributes. Non-model backed form helpers require us to do this by hand.
+
+### 4.
+
+`form_for` generates a `<form> element using the helpers that we use in the block that we pass to it, along with the ActiveRecord model that we pass into it.
+
+### 5.
+
+Using the following:
+
+```ruby
+class PostsController < ApplicationController::Base
+  # ...
+  def create
+
+  end
+  # ...
+end
+```
+
+First, we create the object with mass assignment (using strong parameters):
+
+```ruby
+@post = Post.new post_params
+```
+
+...where `post_params` enforces parameter validation. We need to assign it to an instance variable so we can use it in a template we possibly need to render. Then, we try to save the post (which passes the new object through ActiveRecord validations) at the head of a conditional. Such methods will return a true if it successfully commits the data to the database, and false otherwise. If it's successful, we redirect to the appropriate path, in this case the path for the post we just created:
+
+```ruby
+if @post.save
+  flash[:notice] = 'Your post was created.'
+  redirect_to post_path(@post)
+  # ...
+end
+```
+
+We can also give `flash` a message. If the commit fails, the object gets some errors attached to it (in the `errors` attribute). We can display those errors if we user `render` rather than `redirect_to`. Remember, we render templates and redirect to paths.
+
+```ruby
+if # ...
+else
+  render :index
+end
+```
+
+### 6.
+
+Validations get triggered when we try to commit data to the database. Errors are saved in the `errors` attribute of the ActiveRecord object, which is a hash-like object. We can display them in a human-readable format by calling `full_messages` on that object.
+
+### 7.
+
+Rails helpers allow us to add additional presentation logic to our templates without having to add that logic directly to the templates themselves. Helpers can be shared accross the entire application, or by individual model types.
+
+### 8.
+
+Partials are a way to abstract out repeated templates. We call view templates using the `render` helper.
+
+### 9.
+
+Partials are for generating HTML itself, while helpers are best for processing data into a more friendly format.
+
+### 10.
+
+We use a non-model-backed form when we aren't submitting a form that is directly tied to a model.

@@ -320,3 +320,5 @@ For our validations, the syntax is a little weird when it comes to collections:
 params.require(:post).permit :title, :url, :description, category_ids: []
 ```
 
+## Additional Lecure Notes
+
