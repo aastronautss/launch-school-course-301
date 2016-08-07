@@ -17,7 +17,7 @@ PostitTemplate::Application.routes.draw do
   post '/login', to: 'sessions#create'
   get '/logout', to: 'sessions#destroy'
 
-  resources :users, only: [:show, :create, :edit, :show]
+  resources :users, only: [:show, :create, :edit, :update]
 
   resources :posts, except: [:destroy] do
     resources :comments, only: [:create]
