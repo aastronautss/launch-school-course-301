@@ -1,10 +1,10 @@
 class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update]
   before_action :require_logged_out, only: [:new, :create]
   before_action -> { require_logged_in_as User.find(params[:id]) },
     only: [:edit, :update]
 
   def show
-    set_user
   end
 
   def new
@@ -24,12 +24,9 @@ class UsersController < ApplicationController
   end
 
   def edit
-    set_user
   end
 
   def update
-    set_user
-
     if @user.update user_params
       flash[:notice] = 'Your user profile has been updated.'
       redirect_to user_path(@user)

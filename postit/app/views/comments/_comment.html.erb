@@ -1,9 +1,14 @@
+<% show_post ||= false %>
+
 <div class='well span8'>
   <em>"<%= comment.body %>"</em>
-  <%= ("on " + link_to(comment.post.title, post_path(comment.post))).html_safe %>
+  <% if show_post %>
+    on <%= link_to(comment.post.title, post_path(comment.post)) %>
+  <% end %>
+
   <p>
     <span class='quiet'>by</span>
-    <%= link_to comment.creator.username, '' %>
+    <%= link_to comment.creator.username, iser_path(comment.creator) %>
     <small>at <%= format_date(comment.created_at) %></small>
   </p>
 </div>
