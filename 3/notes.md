@@ -145,7 +145,7 @@ And create the views under `views/sessions`: `new.html.erb`
 Here we're using a non-model-backed form (since we're dealing with sessions):
 
 ```erb
-<%= form_tab '/login' do %>
+<%= form_tag '/login' do %>
   <!-- ... -->
   <%= text_field_tag :username, params[:username] || '' %>
   <!-- ... -->
@@ -165,7 +165,7 @@ We don't need instance variables in the action, since non-model-backed forms do 
 
 ```ruby
 def create
-  user = User.find_by username: params[:username]
+  user = User.find_by username:(params[:username])
 
   if user && user.authenticate(params[:password])
     session[:user_id] = user.id
