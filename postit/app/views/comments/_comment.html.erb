@@ -1,5 +1,6 @@
 <div class='well span8'>
   <em>"<%= comment.body %>"</em>
+  <%= ("on " + link_to(comment.post.title, post_path(comment.post))).html_safe %>
   <p>
     <span class='quiet'>by</span>
     <%= link_to comment.creator.username, '' %>

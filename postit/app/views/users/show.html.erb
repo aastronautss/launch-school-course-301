@@ -1,0 +1,42 @@
+<%= render 'shared/content_title', title: "Profile: #{@user.username}" %>
+
+<div class='well'>
+  <table>
+    <tr>
+      <th><strong>Username:</strong></th>
+      <td><%= @user.username %></td>
+    </tr>
+
+    <tr>
+      <th><strong>Time zone:</strong></th>
+      <td><%= %></td>
+    </tr>
+  </table>
+</div>
+
+<h5><%= @user.username %>'s Activity</h5>
+
+<!-- <ul class='nav nav-tabs'>
+  <li class='active'>
+    Posts (<%= @user.posts.length %>)
+  </li>
+  <li>
+    Comments (<%= @user.comments.length %>)
+  </li>
+</ul> -->
+
+<h6>Posts</h6>
+
+<div class='row'>
+  <% @user.posts.each do |post| %>
+    <%= render 'posts/post', post: post %>
+  <% end %>
+</div>
+
+<h6>Comments</h6>
+
+<div class='row'>
+  <% @user.comments.each do |comment| %>
+    <%= render 'comments/comment', comment: comment, show_post: true %>
+  <% end %>
+</div>
