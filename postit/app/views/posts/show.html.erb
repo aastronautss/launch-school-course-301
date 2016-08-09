@@ -22,7 +22,7 @@
 <h5>Comments:</h5>
 
 <p>
-  <% @post.comments.each do |comment| %>
+  <% @post.comments.sort_by { |c| c.vote_count }.reverse.each do |comment| %>
     <%= render 'comments/comment', comment: comment %>
   <% end %>
 </p>

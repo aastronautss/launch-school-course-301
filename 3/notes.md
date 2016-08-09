@@ -286,6 +286,12 @@ create_table :votes do |t|
 end
 ```
 
+For the polymorphic association, we can use:
+
+```ruby
+t.references :voteable, polymorphic: true
+```
+
 ```
 rake db:migrate
 ```
