@@ -183,3 +183,49 @@ Partials are for generating HTML itself, while helpers are best for processing d
 ### 10.
 
 We use a non-model-backed form when we aren't submitting a form that is directly tied to a model.
+
+## Lesson 3
+
+### 1.
+
+Rendering merely renders a view template, while redirecting triggers a new request (which the browser automatically does in most cases). A redirect makes us hit the router and trigger another action, which resets all instance variables. Rendering allows us to use our instance variables, which is useful in the cases where we want to display errors attached to ActiveRecord objects. When rendering (especially when we are rendering a page that is normally associated with another action), we need to take care to supply it with all the variables it needs.
+
+### 2.
+
+Add a value to one of the keys in `flash`.
+
+### 3.
+
+We just need to supply the template with the appropriate object that contains the message we would like to display. In our temlate, we can add an `if` statement checking to see if that message is present, and display an element if it is there.
+
+Or, we can use `flash`, but we need to add the message to the `now` attribute to it.
+
+### 4.
+
+We should store passwords using a one-way hashing algorithm known as a digest. bcrypt helps us do that automatically, and `has_secure_password` gives us helper methods on an ActiveRecord object. When we're checking if a password is valid, we're running the entered password through the hash and comparing that new string with the stored digest.
+
+### 5.
+
+We need to use `helper_method` on a controller class and pass it symbols with the names of the methods we'd like to use as view helpers.
+
+### 6.
+
+Memoization is the caching of some information to make it so we don't have to hit the database more than once (typically using the ||= operator on an instance variable).
+
+### 7.
+
+First, we create a method on a controller (or `ApplicationController` if we want all controllers to inherit it) that checks if the user is logged in (via a value in the session hash), make that method available as a helper, and hide the comment on the template using a conditional on return value of that helper.
+
+We also need to add a `before_action` to the controller and redirect the user if the `logged_in?` method returns false.
+
+### 8.
+
+We can make the table polymorphic by replacing `photo_id`, `video_id`, `post_id` with a `likeable_id` and `likeable_type` column. The `type` column stores a string with the ActiveRecord class associated with the 'one' side, and the `id` column stores the ID of that object.
+
+### 9.
+
+On the model layer, we add `belongs_to :voteable, polymorphic: true` to the 'many' side, and on each 'one' side, we add `has_many :likes, as: :likeable`.
+
+### 10.
+
+An ERD gives us an overview of the objects in our application, along with the data they are storing, as well as their associations (with cardinaltiy and modality).
