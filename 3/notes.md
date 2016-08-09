@@ -246,3 +246,201 @@ class ApplicationController
 end
 ```
 
+## Lecture 6
+
+### Polymorphic Associations
+
+A different way of building one-to-many assoc. Gets around the problem of a foreign key only being able to link to one other table. They allow us to let anything be on the 'one' side of the association.
+
+We can track this using two columns: one for the associated table, and the other for the foreign key. So if we wanted to be able to comment many different kinds of things (posts, photos, videos, etc.), we'd add two columns: `commentable_type` and `commentable_id`. This is the convention, and we can change them how we'd like.
+
+`commentable_type` keeps track of the thing we are commenting on (in the case of rails an ActiveRecord object), and `commentable_id` is the primary key on that object. This is known as a "composite foreign key". We need two piece of information to track the data down.
+
+Rails has this built in via a convention, but this could be implemented in any number of ways.
+
+Our `votes` table will look like this:
+
+```
+vote BOOLEAN
+user_id INTEGER
+voteable_type STRING
+voteable_id INTEGER
+```
+
+So we can really vote on anything. We're going to only be voting on comments and posts.
+
+#### Creating the votes table and model:
+
+```
+rails generate migration create_votes
+```
+
+```ruby
+create_table :votes do |t|
+  t.boolean :vote
+  t.integer :user_id
+  t.string :voteable_type
+  t.integer :voteable_id
+
+  t.timestamps
+end
+```
+
+```
+rake db:migrate
+```
+
+We create the `Vote` model to set assoc btwn user and vote:
+
+```ruby
+class Vote < ActiveRecord::Base
+  belongs_to :creator, class_name: 'User', foreign_key: 'user_id'
+end
+```
+
+Edit the `User` model:
+
+```ruby
+class User < ActiveRecord::Base
+  # ...
+  has_many :votes
+end
+```
+
+Then we set up the polymorphic association in `Vote`:
+
+```ruby
+class Vote < ActiveRecord::Base
+  # ...
+  belongs_to :voteable, polymorphic: true
+end
+```
+
+`:voteable` has Rails look for conventional columns (`_type` and `_id`). On the "one" side, we do:
+
+```ruby
+class Post < ActiveRecord::Base
+  # ...
+  has_many :votes, as: :voteable
+  # ...
+end
+```
+
+We do the same thing for anything else we want to associate (comments, users, whatever we want. In this case we're just doing posts and comments).
+
+When we want to create the association between two objects, we do:
+
+```ruby
+# Where v is a `Vote`:
+
+post = Post.first
+post.votes << v
+```
+
+For the voting div we use the following classes:
+
+```erb
+<div class='span0 well text-center'>
+  <%= link_to '', do %>
+    <i class='icon-arrow-up'></i>
+  <% end %>
+  <div class='row'>
+    <%= # Number of votes %> Votes
+  </div>
+  <%= link_to '', do %>
+    <i class='icon-arrow-down'></i>
+  <% end %>
+</div>
+```
+
+We have two options for voting routes:
+
+```ruby
+resources :votes, only: [:create]
+
+# POST /votes => 'VotesController#create'
+```
+
+and...
+
+```ruby
+resources :posts, except: [:destroy] do
+  member do
+    post :vote
+  end
+end
+
+# POST /posts/3/vote => 'PostsController#vote'
+```
+
+If look at our routes:
+
+```
+$ rake routes | grep vote
+
+vote_post POST /posts/:id/vote(.:format)    posts#vote
+```
+
+Member means that it's a route that's relevant to every member of `Post`.
+
+If we wanted something like `GET /posts/archives` to just list an archive of our posts (all posts, or whatever) we use `collection`:
+
+```ruby
+resources :posts, except: [:destroy] do
+  collection do
+    get :archives
+  end
+end
+```
+
+Then we have:
+
+```
+$ rake routes | grep archives
+
+archives_posts GET /posts/archives(.:format)     posts#archives
+```
+
+`member` and `collection` make it flexible to get the routes we want using resource routes.
+
+In our UI, we need to turn the link to `vote_post_path` into a POST request, since our router is looking for a `POST` method. We can pass `method: 'post'` to our `link_to`. There is some JavaScript that comes with Rails that generates a form based on that data attribute and submits it to the correct method.
+
+We also need another input element in our form for `true` or `false`. We do this by specifying parameters in the path:
+
+```erb
+<%= link_to vote_post_path(post, vote: true), method: 'post' do %>
+  <!-- ... -->
+<% end %>
+```
+
+The params hash that is passed to `vote_post_path` (or any named route) will add those query params.
+
+In our controller:
+
+```ruby
+def vote
+  @vote = Vote.create voteable: @post, creator: current_user, vote: params[:vote]
+
+  if @vote.valid?
+    flash[:notice] = 'Your vote was counted.'
+  else
+    flash[:error] = 'Your vote was not counted.'
+  end
+
+  redirect_to :back
+end
+```
+
+We want to count upvotes and downvotes in the model layer rather than the view layer, since this is a data concern.
+
+```ruby
+self.votes.where(vote: true).size
+```
+
+Preventing users from voting more than once:
+
+```ruby
+class Vote # ...
+  validates_uniqueness_of :creator, scope: :voteable
+end
+```
