@@ -126,7 +126,7 @@ end
 Then we can add a `before_action` to any of our actions:
 
 ```ruby
-before_Action :require_admin
+before_action :require_admin
 ```
 
 Then we can add it to `ApplicationController`
@@ -223,7 +223,7 @@ We can add the time zone selection to the `user` form:
 `time_zone_select` requires some parameters. If we look at `ActiveSupport::TimeZone`, or `ActiveSupport::TimeZone.us_zones` that gives us a bunch of `TimeZone` objects.
 
 ```erb
-<%= f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones %>
+<%= f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, default: Time.zone.name %>
 ```
 
 We can parse the data, just look at the docs.
@@ -239,3 +239,153 @@ def display_datetime(dt)
   # The rest of the code.
 end
 ```
+
+## Lecture 8
+
+### Modules
+
+We use a module to abstract common logic out of a class.
+
+When we create our own module, we need to add something to `autoload_paths` in `application.rb`.
+
+```ruby
+config.autoload_paths += %W(#{config.root}/lib)
+```
+
+Since we want to extract capabilities, we typically want to use `-able` as a suffix for our module:
+
+```ruby
+# lib/voteable.rb
+
+module Voteable
+  extend ActiveSupport::Concern
+
+  def vote_count
+
+  end
+end
+```
+
+`Concern` allows us to abstract away a common pattern for metaprogramming. All methods we write in our module now will be included as instance methods in our includees. If we want to include class modules, we add:
+
+```ruby
+module Voteable
+  extend ActiveSupport::Concern
+
+  module ClassMethods
+    def my_class_method
+    end
+  end
+end
+```
+
+When I mix in the module, class methods will be automatically added as class methods. This is related to rails, so it doesn't work with pure ruby.
+
+Then we copy and paste the methods that we care about: `vote_count`, `upvote_count`, `downvote_count`, etc. We then include `Voteable`
+
+```ruby
+class Post < ActiveRecord::Base
+  include Voteable
+
+  # ...
+end
+```
+
+Same for comments.
+
+`Concern` also gives us a hook called `included`, which lets us execute code when we include it:
+
+```ruby
+module Voteable
+  extend ActiveSupport::Concern
+
+  included do
+    puts "I'm being included!"
+  end
+  # ...
+end
+```
+
+This allows us to use `has_many` and other methods we call in the class:
+
+```ruby
+inculded do
+  has_many :votes, as: :voteable
+end
+```
+
+### Gems
+
+If we want to create a gem, we can use the `gemcutter` gem:
+
+```
+gem install gemcutter
+```
+
+Create a new project altogether:
+
+```
+cd ..
+mkdir voteable-gem
+```
+
+Then create a gemspec file:
+
+```
+touch voteable.gemspec
+```
+
+In that file:
+
+```ruby
+Gem::Specification.new do |s|
+  s.name = 'voteable_guillen_ls'
+  s.version = '0.0.0'
+  s.date = '2016-08-10'
+  s.summary = "A voting gem"
+  s.description = "A voting"
+  s.authors = ['Tyler Guillen']
+  s.email = 'tyler@tylerguillen.com'
+  s.files = ['lib/voteable_guillen_ls.rb']
+  s.homepage = 'http://github.com'
+end
+```
+
+Then we create all the files and package them into a gem file.
+
+```
+gem build voteable.gemspec
+
+gem push voteable_tyler_ls_0.0.0.gem
+
+# To view the gem
+
+gem list -r voteable_tyler
+```
+
+Now we can just pull the gem from rubygems!
+
+```
+bundle install
+```
+
+We can then add it to `application.rb`:
+
+```ruby
+require 'rails/all' # Existing code
+require 'voteable_tyler_ls'
+```
+
+If we make a change, we up the version of it.
+
+If we want to use it only locally, we just need to specify the path of the gem:
+
+```ruby
+gem 'voteable_tyler_ls', path: '/home/tyler/' # ...
+```
+
+## Bonus Lecture
+
+### Two-factor authentication with Twilio
+
+

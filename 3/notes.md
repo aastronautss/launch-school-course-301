@@ -52,7 +52,7 @@ Bcrypt comes with a salt that it adds to its password digest.
 ```ruby
 has_secure_password validations: false
 
-validates :password, presence: true, on: :create length: { minimum: 3 }
+validates :password, presence: true, on: :create, length: { minimum: 3 }
 ```
 
 `has_secure_password` gives us the `password` virtual attribute that allows us to set values into the password digest, automatically hashing them. There is no getter for the password. It assumes we have a column called `password_digest`.
@@ -104,7 +104,7 @@ We create a form for new user registration. Since we don't want `users/new` to b
 get 'register', to: 'users#new'
 ```
 
-This will also create a named route: `register_route`. This allows us to use:
+This will also create a named route: `register_path`. This allows us to use:
 
 ```erb
 <%= link_to 'Register', register_path %>
